@@ -1,5 +1,7 @@
 var id_tabla = "";
+// Especificar contenido de las tablas.
 var items;
+
 var llaves;
 
 function inicializarLista() {
@@ -59,7 +61,8 @@ function inicializarLista() {
                 "fecha_registro": "Fecha Registro"
             };
     }
-    document.getElementById('list-title').innerHTML = titulo_actual;
+    document.getElementById("list-title").innerHTML = titulo_actual;
+    document.getElementById("boton-crear").href += `?tabla=${id_tabla}`;
     llaves = Object.keys(items);
     let titulos_tabla = "";
 
@@ -67,11 +70,11 @@ function inicializarLista() {
         titulos_tabla += `<th>${items[llave]}</th>\n`;
     })
     titulos_tabla += `<th>Opciones</th>\n`
-    document.querySelector("#tbl_tipo_gestion thead").innerHTML += titulos_tabla;
+    document.querySelector("#tbl_lista thead").innerHTML += titulos_tabla;
 
-    listar();
+    obtenerDatosYListar();
 }
-function listar() {
+function obtenerDatosYListar() {
     const requestOptions = {
         method: "GET",
         redirect: "follow"
@@ -81,13 +84,44 @@ function listar() {
         .then((response) => response.json())
         .then((json) => {
             json.forEach(completarFila);
-            $('#tbl_tipo_gestion').DataTable();
+            $('#tbl_lista').DataTable();
+        })
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
+}
+
+function obtenerDatosYListar() {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    var raw = JSON.stringify({
+
+    });
+    var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+    };
+
+    fetch("http://144.126.210.74:8080/api/dynamic", requestOptions)
+        .then((response) => response.json())
+        .then((json) => {
+            json.forEach(completarFila);
+            $('#tbl_lista').DataTable();
         })
         .then((result) => console.log(result))
         .catch((error) => console.error(error));
 }
 
 function completarFila(element, index, arr) {
+    let nombres_elementos = {
+        "tipo_gestion": "nombre_tipo_gestion",
+        "resultado": "nombre_resultado",
+        "gestion": "id_gestion",
+        "cliente": "nombres",
+        "usuario": "nombres"
+
+    };
     let valores = "";
 
     let elemento = arr[index];
@@ -99,7 +133,7 @@ function completarFila(element, index, arr) {
     });
 
     var fechaHoraFormateada = formatearFechaHora(element.fecha_registro);
-    arr[index] = document.querySelector("#tbl_tipo_gestion tbody").innerHTML += `
+    arr[index] = document.querySelector("#tbl_lista tbody").innerHTML += `
         <tr>
             ${valores}
             <td>${fechaHoraFormateada}</td>

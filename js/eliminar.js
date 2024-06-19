@@ -1,0 +1,7 @@
+function inicializarEliminacion() {
+
+}
+
+function eliminarDatos() {
+
+}

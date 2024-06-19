@@ -8,12 +8,12 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="../js/funciones_generales.js"></script>
-    <script src="../js/actualizar.js"></script>
+    <script src="../js/crear.js"></script>
     <link href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" rel="stylesheet">
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
 </head>
 
-<body onload="inicializarActualizar()">
+<body onload="inicializarCrear()">
 
     <div class="modal fade" id="modal-confirmacion" tabindex="-1" aria-labelledby="Confirmación" aria-hidden="true">
         <div class="modal-dialog">
@@ -24,11 +24,11 @@
                         aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    ¿Estás seguro que quieres actualizar este registro?
+                    ¿Estás seguro que quieres crear este registro?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="alternarModalConfirmacion();">No</button>
-                    <button type="button" class="btn btn-primary" onclick="actualizarDatos();">Actualizar
+                    <button type="button" class="btn btn-primary" onclick="crearDatos();">Actualizar
                         Registro</button>
                 </div>
             </div>
@@ -39,7 +39,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modal-exito-etiqueta">El registro fue actualizado con exito</h1>
+                    <h1 class="modal-title fs-5" id="modal-exito-etiqueta">El registro fue creado con exito</h1>
                     <button type="button" class="btn-close" onclick="alternarModalExito();"
                         aria-label="Cerrar"></button>
                 </div>
@@ -87,13 +87,13 @@
     </div>
 
     <div class="container">
-        <h1 id="titulo-actualizar">Actualizar tipo de gestión</h1>
+        <h1 id="titulo-crear">Crear tipo de gestión</h1>
         <hr>
 
         <form class="needs-validation" novalidate>
-            <div id="form-actualizar">
+            <div id="form-crear">
             </div>
-            <input class="btn btn-primary" type="submit" value="Actualizar" onclick="validarDatos();">
+            <input class="btn btn-primary" type="submit" value="crear" onclick="validarDatos();">
             <input class="btn btn-secondary" type="button" value="Cancelar" onclick="javascript:history.back();">
         </form>
 
