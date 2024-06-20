@@ -72,56 +72,66 @@ function inicializarLista() {
     titulos_tabla += `<th>Opciones</th>\n`
     document.querySelector("#tbl_lista thead").innerHTML += titulos_tabla;
 
-    obtenerDatosYListar();
-}
-function obtenerDatosYListar() {
-    const requestOptions = {
-        method: "GET",
-        redirect: "follow"
-    };
-
-    fetch("http://144.126.210.74:8080/api/" + id_tabla + "?_size=200", requestOptions)
-        .then((response) => response.json())
-        .then((json) => {
-            json.forEach(completarFila);
-            $('#tbl_lista').DataTable();
-        })
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
+    construirSolicitud();
 }
 
-function obtenerDatosYListar() {
-    var myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    var raw = JSON.stringify({
-
-    });
-    var requestOptions = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-    };
-
-    fetch("http://144.126.210.74:8080/api/dynamic", requestOptions)
-        .then((response) => response.json())
-        .then((json) => {
-            json.forEach(completarFila);
-            $('#tbl_lista').DataTable();
-        })
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
-}
-
-function completarFila(element, index, arr) {
+function construirSolicitud() {
     let nombres_elementos = {
         "tipo_gestion": "nombre_tipo_gestion",
         "resultado": "nombre_resultado",
         "gestion": "id_gestion",
         "cliente": "nombres",
         "usuario": "nombres"
-
+    }
+    let select = "";
+    let from = "";
+    let where = "";
+    llaves.forEach((llave) => {
+        if (llave == `id_${id_tabla}`) {
+            select += `${id_tabla}.${llave}, `;
+            from += `${id_tabla}, `;
+        }
+        else if (["id_gestion", "id_tipo_gestion", "id_usuario", "id_cliente", "id_resultado"].includes(llave)) {
+            let nombre_tabla = llave.substring(3);
+            let reemplazo_llave = nombres_elementos[nombre_tabla];
+            select += `${nombre_tabla}.${reemplazo_llave}, `;
+            from += `${nombre_tabla}, `;
+            where += `${id_tabla}.${llave} = ${nombre_tabla}.${llave} AND `;
+        }
+        else {
+            select += `${id_tabla}.${llave}, `;
+        };
+    });
+    select = select.slice(0, -2);
+    from = from.slice(0, -2);
+    where = where.slice(0, -5);
+    let solicitud = `SELECT ${select} FROM ${from} WHERE ${where}`;
+    console.log(solicitud);
+    obtenerDatosYListar(solicitud);
+}
+function obtenerDatosYListar(solicitud) {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    var raw = JSON.stringify({
+        "query": solicitud
+    });
+    var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
     };
+
+    fetch("http://144.126.210.74:8080/dynamic", requestOptions)
+        .then(response => response.json())
+        .then((json) => {
+            json.forEach(completarFila);
+            $('#tbl_lista').DataTable();
+        })
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
+}
+function completarFila(element, index, arr) {
     let valores = "";
 
     let elemento = arr[index];
