@@ -90,29 +90,6 @@ function obtenerDatosYListar() {
         .catch((error) => console.error(error));
 }
 
-function obtenerDatosYListar() {
-    var myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    var raw = JSON.stringify({
-
-    });
-    var requestOptions = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow"
-    };
-
-    fetch("http://144.126.210.74:8080/api/dynamic", requestOptions)
-        .then((response) => response.json())
-        .then((json) => {
-            json.forEach(completarFila);
-            $('#tbl_lista').DataTable();
-        })
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
-}
-
 function completarFila(element, index, arr) {
     let nombres_elementos = {
         "tipo_gestion": "nombre_tipo_gestion",
