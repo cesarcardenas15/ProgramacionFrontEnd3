@@ -110,7 +110,7 @@ function completarFila(element, index, arr) {
     });
 
     var fechaHoraFormateada = formatearFechaHora(element.fecha_registro);
-    arr[index] = document.querySelector("#tbl_lista tbody").innerHTML += `
+    document.querySelector("#tbl_lista tbody").innerHTML += `
         <tr>
             ${valores}
             <td>${fechaHoraFormateada}</td>
