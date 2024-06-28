@@ -1,4 +1,12 @@
 var id_tabla = "";
+var nombres_elementos = {
+    "tipo_gestion": "nombre_tipo_gestion",
+    "resultado": "nombre_resultado",
+    "gestion": "id_gestion",
+    "cliente": "c_nombres",
+    "usuario": "u_nombres"
+};
+var ids_a_nombrar = ["id_gestion", "id_tipo_gestion", "id_usuario", "id_cliente", "id_resultado"];
 // Especificar contenido de las tablas.
 var items;
 
@@ -21,10 +29,10 @@ function inicializarLista() {
             titulo_actual = "Listado de Gestión";
             items = {
                 "id_gestion": "ID",
-                "id_usuario": "ID Usuario",
-                "id_cliente": "ID Cliente",
-                "id_tipo_gestion": "ID Tipo Gestión",
-                "id_resultado": "ID Resultado",
+                "id_usuario": "Nombre Usuario",
+                "id_cliente": "Nombre Cliente",
+                "id_tipo_gestion": "Nombre Tipo Gestión",
+                "id_resultado": "Nombre Resultado",
                 "comentarios": "Comentarios",
                 "fecha_registro": "Fecha Registro"
             };
@@ -72,40 +80,109 @@ function inicializarLista() {
     titulos_tabla += `<th>Opciones</th>\n`
     document.querySelector("#tbl_lista thead").innerHTML += titulos_tabla;
 
-    obtenerDatosYListar();
+    construirSolicitud();
 }
-function obtenerDatosYListar() {
-    const requestOptions = {
-        method: "GET",
-        redirect: "follow"
+
+function construirSolicitud() {
+
+    // Establecer partes de la consulta a construir
+    let select = "";
+    let from = "";
+    let where = "";
+
+    // Ir por cada llave de la tabla actual
+    llaves.forEach((llave) => {
+        // Si la llave por la que se está pasando corresponde al id del registro de la tabla, añadirlo a la lista
+        if (llave == `id_${id_tabla}`) {
+            select += `${id_tabla}.${llave}, `;
+            from += `${id_tabla}, `;
+        }
+        // Si no, ver si la llave de id por la que se está pasando tiene que reemplazarse por la llave de un nombre
+        else if (ids_a_nombrar.includes(llave)) {
+            // Obtener el id de la tabla de la llave cortando la parte "id_" de la llave (Por ejemplo, "id_gestión" pasa a ser "gestión").
+            let nombre_tabla = llave.substring(3);
+            // Usar el id para obtener la llave que corresponde al nombre del registro.
+            let reemplazo_llave = nombres_elementos[nombre_tabla];
+
+            let consulta_select = "";
+            // Si la llave corresponde a un nombre de cliente o usuario, concatenarla con el apellido correspondiente y usarla como la llave
+            // de reemplazo para separar los nombres de clientes y usuarios a elementos independientes, esto para poder después accederlos sin
+            // problema
+            if (["c_nombres", "u_nombres"].includes(reemplazo_llave)) {
+                consulta_select = `CONCAT(${nombre_tabla}.nombres, ' ', ${nombre_tabla}.apellidos) AS ${reemplazo_llave}`;
+            }
+            // Si no, simplemente hacer una consulta normal con la llave de reemplazo
+            else {
+                consulta_select = `${nombre_tabla}.${reemplazo_llave}`
+            }
+
+            select += `${consulta_select}, `;
+            from += `${nombre_tabla}, `;
+            where += `${id_tabla}.${llave} = ${nombre_tabla}.${llave} AND `;
+        }
+        // Si la llave no es el id del registro ni tampoco el id de otra tabla, entonces es otro elemento del registro, en ese caso, simplemente
+        // añadirlo al SELECT
+        else {
+            select += `${id_tabla}.${llave}, `;
+        };
+    });
+
+    // Si "where" no está vacío, anidar "WHERE" al principio, si no, dejar where vació
+    if (!where == "") {
+        where = " WHERE " + where;
+        // Borrar AND sobrante en WHERE
+        where = where.slice(0, -5);
+    };
+    // Borrar comas sobrantes y espacio al final
+    select = select.slice(0, -2);
+    from = from.slice(0, -2);
+
+    // Unir la consulta final
+    let solicitud = `SELECT ${select} FROM ${from}${where}`;
+
+    obtenerDatosYListar(solicitud);
+}
+function obtenerDatosYListar(solicitud) {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    var raw = JSON.stringify({
+        "query": solicitud
+    });
+    var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
     };
 
-    fetch("http://144.126.210.74:8080/api/" + id_tabla + "?_size=200", requestOptions)
-        .then((response) => response.json())
+    fetch("http://144.126.210.74:8080/dynamic", requestOptions)
+        .then(response => response.json())
         .then((json) => {
             json.forEach(completarFila);
             $('#tbl_lista').DataTable();
         })
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
+        .then(result => console.log(result))
+        .catch(error => console.log('error', error));
 }
 
 function completarFila(element, index, arr) {
-    let nombres_elementos = {
-        "tipo_gestion": "nombre_tipo_gestion",
-        "resultado": "nombre_resultado",
-        "gestion": "id_gestion",
-        "cliente": "nombres",
-        "usuario": "nombres"
-
-    };
     let valores = "";
+
+    console.log(element);
 
     let elemento = arr[index];
     let id_elemento = elemento[llaves[0]];
     llaves.forEach((llave) => {
         if (llave != "fecha_registro") {
-            valores += `<td>${elemento[llave]}</td>\n`;
+            if (ids_a_nombrar.includes(llave) && llave != `id_${id_tabla}`) {
+                console.log(llave, id_elemento, "aaaaa");
+                let id_tabla_a_nombrar = llave.substring(3);
+                valores += `<td>${elemento[nombres_elementos[id_tabla_a_nombrar]]}</td>\n`;
+                console.log(valores, llave, elemento[nombres_elementos[id_tabla_a_nombrar]]);
+            }
+            else {
+                valores += `<td>${elemento[llave]}</td>\n`;
+            }
         }
     });
 
