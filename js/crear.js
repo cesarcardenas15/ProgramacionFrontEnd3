@@ -1,13 +1,19 @@
+// Llaves de los elementos en la tabla.
 var llaves;
+
 var id_tabla_pagina;
-var id_elemento;
+
 function inicializarCrear() {
+    // Obtener que en que tabla se quiere crear a partir del id encontrado en la dirección URL.
     id_tabla_pagina = obtenerValorEnDireccion("tabla");
 
+    // Especificar titulo predeterminado.
     let titulo_actual = "Crear Tipo de Gestión";
     let items;
     let forms = "";
 
+    // A partir del ID de la tabla, especificar los nombres correspondientes a cada llave de la tabla
+    // que se mostrarán para describir cada elemento del formulario.
     switch (id_tabla_pagina) {
         case "resultado":
             titulo_actual = "Crear Resultado";
@@ -48,31 +54,41 @@ function inicializarCrear() {
             };
             break;
         default:
+            // Si no se especifica un ID de tabla, especificar uno predeterminado.
             id_tabla_pagina = "tipo_gestion";
             items = {
                 "nombre_tipo_gestion": "Nombre",
             };
     };
+
+    // Si no se especificó ninguna tabla, mostrar un error.
     if (id_tabla_pagina == undefined) {
         let texto_error = "Parece que hubo un error y no es posible encontrar la tabla especificaste, selecciona otra tabla inténtalo de nuevo.";
         mostrarError(texto_error);
     }
 
-    // Tomar las "llaves" del array items.
+    // Tomar las "llaves" de los elementos de la tabla.
     llaves = Object.keys(items);
+
+    // Por cada llave, construir un elemento del formulario.
     llaves.forEach((llave) => {
         let tipo = "text";
         let comentario = `Ingrese ${items[llave]}.`;
         let seleccion = false;
 
-        if (["email", "username"].includes(llave)) {
+        // Si la llave corresponde a alguna de las siguientes, especificar su tipo para que el formulario
+        // las muestre correctamente (Por ejemplo, esto se usa para esconder las contraseñas).
+        if (["email", "username", "password"].includes(llave)) {
             tipo = llave;
         }
 
+        // Si la llave corresponde a alguna de las siguientes, especificar que son de tipo "Selección",
+        // para que el usuario pueda elegir un registro desde una lista.
         if (["id_gestion", "id_tipo_gestion", "id_resultado"].includes(llave)) {
             seleccion = true;
         }
 
+        // Construir los elementos del formulario a partir de las variables establecidas anteriormente.
         if (!seleccion) {
             forms += `
                 <div class="mb-3">
@@ -84,6 +100,7 @@ function inicializarCrear() {
                     </div>
                 </div>\n`;
         }
+        // Si el elemento del formulario es de tipo "Selección", construir el elemento para usarlo como tal.
         else {
             forms += `
                 <div class="form-floating">
@@ -92,10 +109,11 @@ function inicializarCrear() {
                     </select>
                     <label for="floatingSelect">${items[llave]}</label>
                 </div>`;
-            // Corta la parte "id_" de la llave para conseguir el nombre de la tabla
+            // Corta la parte "id_" de la llave para conseguir el nombre de la tabla.
             let nombre_tabla = llave.substring(3);
+            // Usar el nombre de la tabla para encontrar los registros que necesita el elemento de tipo
+            // selección.
             obtenerDatosCrear(nombre_tabla);
-            console.log(nombre_tabla);
         }
     });
     document.getElementById("titulo-crear").innerHTML = titulo_actual;
@@ -134,11 +152,13 @@ function completarFormulario(element, index, arr) {
     document.getElementById(id_tabla).innerHTML += opcion;
 }
 
+// Validar que el formulario tenga datos validos
 function validarDatos() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    // Almacenar los elementos del formulario que necesitan validación
     const forms = document.querySelectorAll('.needs-validation');
 
-    // Loop over them and prevent submission
+    // Al presionar el botón de tipo "submit", ir por cada elemento y si alguno no es valido,
+    // evitar que se permita la creación del registro.
     Array.from(forms).forEach(form => {
         form.addEventListener('submit', event => {
             event.preventDefault();
@@ -147,6 +167,7 @@ function validarDatos() {
                 let texto_error = "Hay uno o más elementos que no tienen valores validos, verifica el formulario e inténtalo de nuevo."
                 mostrarError(texto_error);
             }
+            // Si ningún elemento es invalido, preguntar por confirmación
             else {
                 alternarModalConfirmacion();
             }
