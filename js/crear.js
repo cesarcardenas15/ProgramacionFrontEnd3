@@ -85,8 +85,11 @@ function inicializarCrear() {
         // Si la llave corresponde a alguna de las siguientes, especificar que son de tipo "Selección",
         // para que el usuario pueda elegir un registro desde una lista.
         if (["id_gestion", "id_tipo_gestion", "id_resultado", "id_cliente", "id_usuario"].includes(llave)) {
-            seleccion = true;
-        }
+            if (llave.substring(3) != id_tabla_pagina) {
+                console.log(llave.substring(3))
+                seleccion = true;
+            }
+        };
 
         // Construir los elementos del formulario a partir de las variables establecidas anteriormente.
         if (!seleccion) {
