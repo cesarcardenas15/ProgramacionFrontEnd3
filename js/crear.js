@@ -84,7 +84,7 @@ function inicializarCrear() {
 
         // Si la llave corresponde a alguna de las siguientes, especificar que son de tipo "Selección",
         // para que el usuario pueda elegir un registro desde una lista.
-        if (["id_gestion", "id_tipo_gestion", "id_resultado"].includes(llave)) {
+        if (["id_gestion", "id_tipo_gestion", "id_resultado", "id_cliente", "id_usuario"].includes(llave)) {
             seleccion = true;
         }
 
@@ -148,7 +148,13 @@ function completarFormulario(element, index, arr) {
     let id_tabla = Object.keys(elemento)[0];
     // Quitarle "id_" a la llave del id de la tabla para obtener su nombre.
     let nombre_tabla = id_tabla.substring(3);
-    let opcion = `<option value="${elemento[id_tabla]}">${elemento[nombres_elementos[nombre_tabla]]}</option>\n`;
+    let opcion = "";
+    if (["cliente", "usuario"].includes(nombre_tabla)) {
+        opcion = `<option value="${elemento[id_tabla]}">${elemento["nombres"]} ${elemento["apellidos"]}</option>\n`
+    }
+    else {
+        opcion = `<option value="${elemento[id_tabla]}">${elemento[nombres_elementos[nombre_tabla]]}</option>\n`;
+    }
     document.getElementById(id_tabla).innerHTML += opcion;
 }
 
