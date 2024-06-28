@@ -67,27 +67,44 @@ function inicializarActualizar() {
     llaves.forEach((llave) => {
         let tipo = "text";
         let comentario = `Ingrese ${items[llave]}.`;
-        let estado = "";
+        let seleccion = false;
+        let estado = "required";
         if (["email", "username"].includes(llave)) {
             tipo = llave;
         }
-        if (["id_gestion", "id_usuario", "id_cliente", "id_tipo_gestion", "id_resultado"].includes(llave)) {
+
+        if (["id_gestion", "id_tipo_gestion", "id_resultado", "id_cliente", "id_usuario"].includes(llave) && llave != `id_${id_tabla}`) {
+            seleccion = true;
+        }
+        if (llave == `id_${id_tabla}`) {
+            estado = "disabled";
             comentario = "";
-            estado = " disabled";
+        }
+        if (!seleccion) {
+            forms += `
+                <div class="mb-3">
+                    <label for="${llave}" class="form-label">${items[llave]}</label>
+                    <input type="${tipo}" class="form-control" id="${llave}" aria-describedby="emailHelp" ${estado}>
+                    <div id="emailHelp" class="form-text">${comentario}</div>
+                    <div class="invalid-feedback">
+                        Por favor, ingresa ${items[llave]}.
+                </div>
+
+                </div>\n`
         }
         else {
-            estado = " required";
-        }
-        forms += `
-        <div class="mb-3">
-            <label for="${llave}" class="form-label">${items[llave]}</label>
-            <input type="${tipo}" class="form-control" id="${llave}" aria-describedby="emailHelp"${estado}>
-            <div id="emailHelp" class="form-text">${comentario}</div>
-            <div class="invalid-feedback">
-                Por favor, ingresa ${items[llave]}.
-        </div>
-
-        </div>\n`
+            forms += `
+                <div class="form-floating">
+                    <select class="form-select" id="${llave}" aria-label="${items[llave]}" required>
+                    </select>
+                    <label for="floatingSelect">${items[llave]}</label>
+                </div>`;
+            // Corta la parte "id_" de la llave para conseguir el nombre de la tabla.
+            let nombre_tabla = llave.substring(3);
+            // Usar el nombre de la tabla para encontrar los registros que necesita el elemento de tipo
+            // selección.
+            obtenerDatosSeleccion(nombre_tabla);
+        };
     });
     document.getElementById("titulo-actualizar").innerHTML = titulo_actual;
     document.getElementById("form-actualizar").innerHTML = forms;
@@ -108,13 +125,52 @@ function obtenerDatosActualizar() {
         .catch((error) => console.error(error));
 }
 
+function obtenerDatosSeleccion(id_tabla) {
+    const requestOptions = {
+        method: "GET",
+        redirect: "follow"
+    };
+
+    fetch(`http://144.126.210.74:8080/api/${id_tabla}`, requestOptions)
+        .then((response) => response.json())
+        .then((json) => json.forEach(completarFormularioSeleccion))
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
+}
+
+
 function completarFormulario(element, index, arr) {
     let elemento = arr[0];
     console.log(elemento);
     llaves.forEach((llave) => {
         document.getElementById(llave).value = elemento[llave];
     })
+}
 
+
+function completarFormularioSeleccion(element, index, arr) {
+    let elemento = arr[index];
+    // Especificar el valor preferido para mostrar en la selección dependiendo de la tabla.
+    let nombres_elementos = {
+        "tipo_gestion": "nombre_tipo_gestion",
+        "resultado": "nombre_resultado",
+        "gestion": "id_gestion",
+        "cliente": "nombres",
+        "usuario": "nombres"
+
+    };
+    // Obtener id de tabla
+    let id_tabla = Object.keys(elemento)[0];
+    // Quitarle "id_" a la llave del id de la tabla para obtener su nombre.
+    let nombre_tabla = id_tabla.substring(3);
+    let opcion = "";
+    if (["cliente", "usuario"].includes(nombre_tabla)) {
+        opcion = `<option value="${elemento[id_tabla]}">${elemento["nombres"]} ${elemento["apellidos"]}</option>\n`
+    }
+    else {
+        opcion = `<option value="${elemento[id_tabla]}">${elemento[nombres_elementos[nombre_tabla]]}</option>\n`;
+    }
+    document.getElementById(id_tabla).innerHTML += opcion;
 }
 
 function validarDatos() {
@@ -166,7 +222,6 @@ function actualizarDatos() {
 
     //Carga útil de datos
     const raw = JSON.stringify(solicitud_patch);
-    console.log(raw);
 
     //Opciones de solicitud
     const requestOptions = {
