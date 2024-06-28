@@ -140,7 +140,6 @@ function construirSolicitud() {
     // Unir la consulta final
     let solicitud = `SELECT ${select} FROM ${from}${where}`;
 
-    console.log(solicitud);
     obtenerDatosYListar(solicitud);
 }
 function obtenerDatosYListar(solicitud) {
@@ -149,7 +148,6 @@ function obtenerDatosYListar(solicitud) {
     var raw = JSON.stringify({
         "query": solicitud
     });
-    console.log(raw);
     var requestOptions = {
         method: 'POST',
         headers: myHeaders,
@@ -157,7 +155,6 @@ function obtenerDatosYListar(solicitud) {
         redirect: 'follow'
     };
 
-    console.log(requestOptions);
     fetch("http://144.126.210.74:8080/dynamic", requestOptions)
         .then(response => response.json())
         .then((json) => {
@@ -167,6 +164,7 @@ function obtenerDatosYListar(solicitud) {
         .then(result => console.log(result))
         .catch(error => console.log('error', error));
 }
+
 function completarFila(element, index, arr) {
     let valores = "";
 
@@ -189,7 +187,7 @@ function completarFila(element, index, arr) {
     });
 
     var fechaHoraFormateada = formatearFechaHora(element.fecha_registro);
-    arr[index] = document.querySelector("#tbl_lista tbody").innerHTML += `
+    document.querySelector("#tbl_lista tbody").innerHTML += `
         <tr>
             ${valores}
             <td>${fechaHoraFormateada}</td>
